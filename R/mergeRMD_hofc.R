@@ -82,4 +82,3 @@ mergeRMD_hofc <- function (mergedFileName = "book.Rmd", title = ".", files, prea
   }
   setwd(old)
 }
-environment(mergeRMD_tt) <- environment(mergeRMD_hofc)
