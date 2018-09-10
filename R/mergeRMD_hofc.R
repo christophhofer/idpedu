@@ -7,12 +7,12 @@ mergeRMD_hofc <- function (mergedFileName = "book.Rmd", title = ".", files, prea
     warning(paste0(mergedFileName, " already exists"))
   }
   text.input = vector("character", 1)
-  #task.names = paste0("## Aufgabe ", 1:length(files))
+  # task.names = paste0("Aufgabe ", 1:length(files))
   for (i in 1:length(files)) {
     text.input = readLines(files[i], warn = FALSE)
     metaspan = grep("---", text.input)
     cell.insert = character(length = 1)
-    j = 1
+    j = 0
     #cell.insert[j] = task.names[i]
     cell.insert[j + 1] = "```{r, echo=FALSE, eval=TRUE,comment=NA}"
     cell.insert[j + 2] = "options(useFancyQuotes = FALSE)"
@@ -20,6 +20,7 @@ mergeRMD_hofc <- function (mergedFileName = "book.Rmd", title = ".", files, prea
                                                   collapse = ","), ")")
     cell.insert[j + 4] = paste("baseDir=dirname(files[", 
                                i, "])")
+
     cell.insert[j + 5] = "```"
     if (print.paths == T) {
       cell.insert[j + 6] = paste0("\\href{run:`r dirname(files[", 
@@ -30,6 +31,7 @@ mergeRMD_hofc <- function (mergedFileName = "book.Rmd", title = ".", files, prea
     else {
       cell.insert[j + 6] = ""
     }
+    
     text.input = c(text.input[1:metaspan[2]], cell.insert[1:(j + 
                                                                6)], text.input[(metaspan[2] + 1):length(text.input)])
     text.input = text.input[-c(metaspan[1]:metaspan[2])]
@@ -44,8 +46,22 @@ mergeRMD_hofc <- function (mergedFileName = "book.Rmd", title = ".", files, prea
   }
   text.combined = eval(parse(text = paste0("c(", paste0("text.chunk", 
                                                         1:length(files), collapse = ","), ")")))
+ 
+  ### Aufgabe NR in front of the excersice title
+  count.exercise <- 1
+  for(jj in 1:length(text.combined))
+  {
+    if( grepl(pattern = '##', x = text.combined[jj]) ){
+    text.combined[jj] <- gsub(pattern = '##', x = text.combined[jj], replacement = paste('## Aufgabe ', count.exercise, ":", sep = "") )
+    count.exercise <- count.exercise + 1
+    }
+  }
+  rm(count.exercise)
+
+  
   book_header = paste("---\noutput:", "pdf_document", "\n---")
   cell.insert2 = paste("\\begin{center} \\huge{", title, "} \\end{center}")
+  
   if (!missing(preamble)) {
     preamble.input = vector("character", 1)
     preamble.input = readLines(preamble)
@@ -66,3 +82,4 @@ mergeRMD_hofc <- function (mergedFileName = "book.Rmd", title = ".", files, prea
   }
   setwd(old)
 }
+environment(mergeRMD_tt) <- environment(mergeRMD_hofc)
